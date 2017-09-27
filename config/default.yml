@@ -1,0 +1,35 @@
+version: "2"
+
+services:
+   DOCKER_DEFAULT_DB:
+     image: mariadb
+     container_name: DOCKER_DEFAULT_DB
+     restart: always
+     command: mysqld --innodb-buffer-pool-size=20M
+     environment:
+       MYSQL_ROOT_PASSWORD: Bcs12345
+       MYSQL_DATABASE: wordpress
+       MYSQL_USER: wordpress
+       MYSQL_PASSWORD: wordpress
+     volumes:
+       - ./mariadb:/var/lib/mysql:rw
+   wordpress:
+     depends_on:
+       - DOCKER_DEFAULT_DB
+     image: wordpress:latest
+     volumes:
+       - "./html:/var/www/html:rw"
+       - "./nginx/php_conf/upload.ini:/usr/local/etc/php/conf.d/uploads.ini"
+     expose:
+       - 80
+     restart: always
+     environment:
+       VIRTUAL_HOST: DOCKER_DEFAULT_DOMAIN
+       WORDPRESS_DB_HOST: DOCKER_DEFAULT_DB:3306
+       WORDPRESS_DB_USER: wordpress
+       WORDPRESS_DB_PASSWORD: wordpress
+
+networks:
+  default:
+    external:
+      name: nginx-proxy
